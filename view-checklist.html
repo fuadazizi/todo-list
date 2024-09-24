@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Checklist</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>View Checklist</h1>
+    <div class="container" id="viewChecklist">
+
+    </div>
+
+    <div id="not-login">
+        <p>You are not logged in yet</p>
+        <p>Please <a href="/login.html">login</a> first!</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const token = localStorage.getItem('token');
+            const viewChecklist = document.getElementById('viewChecklist');
+            const notLogin = document.getElementById('not-login');
+
+            if (!token) {
+                viewChecklist.style.display = 'none';
+                notLogin.style.display = 'block';
+            }
+            
+            // Fetching checklist
+            try {
+                const response = await fetch('http://94.74.86.174:8080/api/checklist', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.statusCode === 2100) {
+                let checklistHtml = '';
+                result.data.forEach(checklist => {
+                    checklistHtml += `
+                        <div class="checklist-item">
+                            <h3>${checklist.name}</h3>
+                            <ul>
+                                ${checklist.items ? checklist.items.map(item => `
+                                    <li>
+                                        ${item.name} - ${item.itemCompletionStatus ? 'Completed' : 'Pending'}
+                                    </li>
+                                `).join('') : '<li>No items</li>'}
+                            </ul>
+                        </div>
+                    `;
+                });
+                viewChecklist.innerHTML = checklistHtml;
+            } else {
+                alert('Failed to load checklists: ' + (result.errorMessage || result.message));
+            }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while fetching the checklists.');
+            }
+        });
+    </script>
+</body>
+</html>

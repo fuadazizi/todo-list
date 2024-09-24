@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Checklist</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Create Checklist</h1>
+    <form class="container" id="createChecklist">
+        <p> Create new checklist </p>
+        <label for="name">Name</label>
+        <input type="text" name="name" id="name" placeholder="Ex: Cook Fried Rice">
+
+        <button type="submit">Create Checklist</button>
+    </form>
+
+    <div id="not-login">
+        <p>You are not logged in yet</p>
+        <p>Please <a href="/login.html">login</a> first!</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            const createChecklist = document.getElementById('createChecklist');
+            const notLogin = document.getElementById('not-login');
+
+            if (!token) {
+                createChecklist.style.display = 'none';
+                notLogin.style.display = 'block';
+            }
+            
+        });
+
+        document.getElementById('createChecklist').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const token = localStorage.getItem('token');
+
+            const name = document.getElementById('name').value;
+            const data = {
+                name: name
+            };
+
+            try {
+                const response = await fetch('http://94.74.86.174:8080/api/checklist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.statusCode === 2000) {
+                    alert('Checklist creation successful');
+                    window.location.href = '/home.html';
+                } else {
+                    alert('Checklist creation failed: ' + (result.errorMessage));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while creating.');
+            }
+        });
+    </script>
+</body>
+</html>
