@@ -4,16 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail List</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Detail Checklist (nama checklist)</h1>
-    <h4>To Do List</h4>
-    <input type="checkbox" name="check1" value="Homework">
-    <label for="check1"> Doing Homework </label> <br>
-    <input type="checkbox" name="check2" value="Wash">
-    <label for="check2"> Washing Clothes </label> <br>
-    <input type="checkbox" name="check3" value="Soccer">
-    <label for="check3"> Playing soccer </label> <br>
-    <a href="/index.html">Welcome Page</a>
+    <h1>Detail Checklist</h1>
+    <div id="checklistDetail">
+    </div>
+    
+    <div id="not-login">
+        <p>You are not logged in yet</p>
+        <p>Please <a href="/login.html">login</a> first!</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const token = localStorage.getItem('token');
+            const checklistDetail = document.getElementById('checklistDetail');
+            const notLogin = document.getElementById('not-login');
+
+            if (!token) {
+                checklistDetail.style.display = 'none';
+                notLogin.style.display = 'block';
+            }
+
+            // Get checklist id from query string
+            const urlParams = new URLSearchParams(window.location.search);
+            const checklistId = urlParams.get('id');
+
+            if (!checklistId) {
+                checklistDetail.innerHTML = '<p>No checklist ID.</p>';
+                return;
+            }
+
+            // Load Checklist
+            const loadChecklistDetail = async () => {
+                try {
+                    const response = await fetch(`http://94.74.86.174:8080/api/checklist/${checklistId}/item`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.statusCode === 2000) {
+                        let checklistHtml = `<h3>Checklist ID: ${checklistId}</h3>`;
+                        if (result.data.length > 0) {
+                            checklistHtml += '<ul>';
+                            result.data.forEach(item => {
+                                checklistHtml += `
+                                    <li>${item.name} - ${item.itemCompletionStatus ? 'Completed' : 'Not Completed'}</li>
+                                `;
+                            });
+                            checklistHtml += '</ul>';
+                        } else {
+                            checklistHtml += '<p>No items in this checklist.</p>';
+                        }
+                        checklistDetail.innerHTML = checklistHtml;
+                    } else {
+                        checklistDetail.innerHTML = `<p>Failed to load checklist: ${result.errorMessage || result.message}</p>`;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    checklistDetail.innerHTML = '<p>An error occurred while fetching the checklist.</p>';
+                }
+            };
+
+            // Muat detail checklist dan item-itemnya
+            loadChecklistDetail();
+        });
+    </script>
 </body>
 </html>

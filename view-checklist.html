@@ -27,7 +27,7 @@
                 return;
             }
     
-            // Fungsi untuk memuat checklist
+            // Load all checlist
             const loadChecklists = async () => {
                 try {
                     const response = await fetch('http://94.74.86.174:8080/api/checklist', {
@@ -41,15 +41,13 @@
                     const result = await response.json();
     
                     if (result.statusCode === 2100) {
-                        // Jika berhasil, tampilkan checklist dan item secara langsung
                         let checklistHtml = '';
                         for (let checklist of result.data) {
-                            // Load items untuk setiap checklist
                             let itemsHtml = await loadItems(checklist.id);
     
                             checklistHtml += `
                                 <div class="checklist-item">
-                                    <h3>${checklist.name}</h3>
+                                    <h3><a href="/detail-checklist.html?id=${checklist.id}">${checklist.name}</a></h3>
                                     <div id="items-${checklist.id}">
                                         ${itemsHtml}
                                         </div>
@@ -67,7 +65,7 @@
                 }
             };
     
-            // Fungsi untuk mengambil item dari checklist
+            // Get checklist items by id
             const loadItems = async (checklistId) => {
                 try {
                     const response = await fetch(`http://94.74.86.174:8080/api/checklist/${checklistId}/item`, {
@@ -102,7 +100,7 @@
                 }
             };
     
-            // Fungsi untuk menghapus checklist
+            // Delete checklist
             window.deleteChecklist = async function(checklistId) {
                 if (confirm('Are you sure you want to delete this checklist?')) {
                     try {
@@ -118,7 +116,7 @@
     
                         if (result.statusCode === 2300) {
                             alert('Checklist deleted successfully');
-                            loadChecklists(); // Refresh the checklist view after deletion
+                            loadChecklists();
                         } else {
                             alert('Failed to delete checklist: ' + (result.errorMessage || result.message));
                         }
@@ -129,7 +127,7 @@
                 }
             };
     
-            // Muat checklist pada halaman
+            // Reload checklist
             loadChecklists();
         });
     </script>    
